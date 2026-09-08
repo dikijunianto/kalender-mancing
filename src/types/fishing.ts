@@ -1,0 +1,101 @@
+export type Area = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  timezone: string;
+  marine_zone_name: string;
+};
+export type Source = "DEMO" | "LIVE" | "CACHED" | "UNAVAILABLE";
+export type MarineHour = {
+  timestamp: string;
+  windSpeed: number | null;
+  windDirection: number | null;
+  waveHeight: number | null;
+  wavePeriod: number | null;
+  currentSpeed: number | null;
+  currentDirection: number | null;
+  temperature: number | null;
+  seaTemperature: number | null;
+  precipitation: number | null;
+  rainProbability: number | null;
+  cloudCover: number | null;
+  visibility: number | null;
+  weatherCode: number | null;
+  tideHeight: number | null;
+};
+export type Forecast = {
+  area: Area;
+  date: string;
+  hours: MarineHour[];
+  source: Source;
+  fetchedAt: string | null;
+  notice: string | null;
+};
+export type Safety = {
+  status: "SAFE" | "CAUTION" | "NOT_RECOMMENDED";
+  reasons: string[];
+  complete: boolean;
+};
+export type Moon = {
+  phase: number;
+  illumination: number;
+  name: string;
+  moonrise: string | null;
+  moonset: string | null;
+  sunrise: string;
+  sunset: string;
+};
+export type ScorePart = { key: string; label: string; value: number | null; weight: number };
+export type FishingScore = {
+  total: number | null;
+  label: string;
+  parts: ScorePart[];
+  coverage: number;
+};
+export type Species = {
+  id: string;
+  name: string;
+  slug: string;
+  scientific_name: string;
+  description: string;
+  habitat: string;
+  min_depth: number;
+  max_depth: number;
+  preferred_temperature_min: number;
+  preferred_temperature_max: number;
+  techniques: string[];
+  bait: string[];
+  months: number[];
+  areas: string[];
+};
+export type FishRecommendation = { species: Species; score: number; reason: string };
+export type FishingWindow = { start: string; end: string; label: string; reason: string };
+export type Tide = { timestamp: string; height: number; type: "HIGH" | "LOW" | "NORMAL" };
+export type DailyReport = {
+  forecast: Forecast;
+  current: MarineHour | null;
+  safety: Safety;
+  score: FishingScore;
+  moon: Moon;
+  tides: Tide[];
+  windows: FishingWindow[];
+  fish: FishRecommendation[];
+};
+export type MarineSceneState = {
+  timestamp: string;
+  isDaytime: boolean;
+  sunAltitude: number;
+  moonPhase: number;
+  moonIllumination: number;
+  windSpeed: number;
+  windDirection: number;
+  waveHeight: number;
+  wavePeriod: number;
+  precipitationIntensity: number;
+  precipitationProbability: number;
+  cloudCover: number;
+  weatherCondition: number;
+};

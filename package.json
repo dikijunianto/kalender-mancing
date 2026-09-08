@@ -1,0 +1,50 @@
+{
+  "name": "kalender-mancing",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "test:browser": "playwright test",
+    "format": "prettier --write src scripts tests *.ts *.json *.mjs README.md",
+    "db:seed": "tsx scripts/seed.ts",
+    "provider:check": "tsx scripts/check-provider.ts",
+    "production:check": "tsx scripts/check-production.ts"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "1.3.3",
+    "@radix-ui/react-tabs": "1.1.21",
+    "@react-three/drei": "10.7.8",
+    "@react-three/fiber": "9.7.0",
+    "@supabase/ssr": "0.12.6",
+    "@supabase/supabase-js": "2.116.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "1.42.0",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "recharts": "3.10.1",
+    "suncalc": "^1.9.0",
+    "tailwind-merge": "3.6.0",
+    "three": "0.185.1",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "26.5.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@types/suncalc": "1.9.2",
+    "@types/three": "0.185.4",
+    "prettier": "^3.9.6",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.23.13",
+    "typescript": "7.0.2"
+  }
+}
