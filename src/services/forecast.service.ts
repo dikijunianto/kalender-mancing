@@ -10,7 +10,7 @@ import { getTides } from "./tide.service";
 import { DemoMarineProvider } from "@/providers/marine/demo";
 import { OpenMeteoMarineProvider } from "@/providers/marine/open-meteo";
 import { adminSupabase } from "@/lib/supabase/server";
-import { postgres } from "@/lib/postgres";
+import { ensureForecastCache } from "@/lib/postgres";
 import { addDays, today } from "@/lib/date";
 import { fishingConfig } from "@/config/fishing";
 import { applyForecastFreshness } from "./forecast-freshness";
@@ -45,7 +45,7 @@ export const getForecast = cache(async (slug: string, date: string): Promise<For
       "Prakiraan belum tersedia untuk tanggal ini. Periksa prakiraan maritim resmi BMKG sebelum melaut.",
   };
   if (date < today() || date > addDays(today(), fishingConfig.forecastDays - 1)) return unavailable;
-  const pg = postgres(), db = pg ? null : adminSupabase();
+  const pg = await ensureForecastCache(), db = pg ? null : adminSupabase();
   let saved: Forecast | null = null;
   try {
     if (pg) {

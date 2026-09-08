@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/server";
-import { postgres } from "@/lib/postgres";
+import { ensureForecastCache } from "@/lib/postgres";
 import { areas } from "@/config/data";
 import { OpenMeteoMarineProvider } from "@/providers/marine/open-meteo";
 import { today, addDays } from "@/lib/date";
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     provided = Buffer.from(request.headers.get("authorization") ?? "");
   if (expected.length !== provided.length || !timingSafeEqual(expected, provided))
     return NextResponse.json({ error: "Tidak diizinkan" }, { status: 401 });
-  const pg = postgres(), db = pg ? null : adminSupabase();
+  const pg = await ensureForecastCache(), db = pg ? null : adminSupabase();
   if (!pg && !db) return NextResponse.json({ error: "Database belum dikonfigurasi" }, { status: 503 });
   try {
     let days = 0;
