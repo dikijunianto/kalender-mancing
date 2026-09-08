@@ -45,7 +45,8 @@ SYNC_SECRET=
 | `DATABASE_URL` | PostgreSQL connection for persistent forecast cache. |
 | `DEMO_MODE` | `true` for simulation; `false` for live forecasts. |
 | `OPEN_METEO_API_KEY` | Optional commercial Open-Meteo key. |
-| `SYNC_SECRET` | Secret bearer token protecting `POST /api/sync`. |
+| `SYNC_SECRET` | Secret bearer token protecting manual `POST /api/sync`. |
+| `CRON_SECRET` | Vercel Cron secret protecting daily `GET /api/sync`. |
 
 ## PostgreSQL cache
 
@@ -78,7 +79,7 @@ Set `DEMO_MODE=false` and restart. `OpenMeteoMarineProvider` combines [marine](h
 
 The app shows seven forecast days. Past dates and dates outside that horizon show unavailable states; they never silently become demo forecasts. The provider has a ten-second request timeout and no aggressive retry loop. Server caching lasts 30 minutes and concurrent cold requests share one provider operation. PostgreSQL persists normalized reports. On provider failure, cache no older than six hours is labeled `CACHED`, with caution instead of a fresh-safe status. Older/missing cache yields `UNAVAILABLE`.
 
-An external scheduler can call `POST /api/sync` every few hours with `Authorization: Bearer <SYNC_SECRET>`. It refreshes both areas' seven-day PostgreSQL cache. There is no automatic scheduler installed by this project. Use your hosting provider's scheduler or a trusted job runner; do not put the secret in client code or a URL.
+Vercel calls `GET /api/sync` daily at 00:00 UTC (07:00 Jakarta) and refreshes both areas' seven-day PostgreSQL cache. Set `CRON_SECRET` in Vercel Production; Vercel sends it automatically. For manual syncing, call `POST /api/sync` with `Authorization: Bearer <SYNC_SECRET>`.
 
 Use `npm run provider:check` to make a real request and report field coverage for both areas. The public Open-Meteo service is intended for non-commercial use; choose an appropriate commercial subscription/key before commercial operation. See the provider's current terms.
 
@@ -156,7 +157,7 @@ The app needs a Next.js-compatible Node hosting environment; it is not a static 
 
 1. Copy `.env.docker.example` to `.env`, set strong values, then run `docker compose up --build -d`.
 2. Verify `npm run provider:check` and `POST /api/sync`.
-3. Schedule the protected sync endpoint every few hours.
+3. Set `CRON_SECRET` in Vercel Production for the daily sync.
 4. When ready to publish source, review the diff and push. Environment files, `.next`, `node_modules`, and test artifacts are ignored.
 
 Ocean imagery attribution is recorded in `public/ASSETS.md`. Fish symbols are generic Lucide icons, not scientific species illustrations.

@@ -7,8 +7,8 @@ import { OpenMeteoMarineProvider } from "@/providers/marine/open-meteo";
 import { today, addDays } from "@/lib/date";
 import { getTides } from "@/services/tide.service";
 import { getMoon } from "@/services/moon.service";
-export async function POST(request: NextRequest) {
-  const secret = process.env.SYNC_SECRET;
+async function sync(request: NextRequest) {
+  const secret = process.env.CRON_SECRET ?? process.env.SYNC_SECRET;
   if (!secret)
     return NextResponse.json({ error: "Sinkronisasi belum dikonfigurasi" }, { status: 503 });
   const expected = Buffer.from(`Bearer ${secret}`),
@@ -102,3 +102,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const GET = sync;
+export const POST = sync;
