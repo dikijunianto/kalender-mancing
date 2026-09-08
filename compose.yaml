@@ -1,0 +1,42 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://kalender:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/kalender
+      DEMO_MODE: "false"
+      SYNC_SECRET: ${SYNC_SECRET:?Set SYNC_SECRET in .env}
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: kalender
+      POSTGRES_USER: kalender
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kalender -d kalender"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  db-init:
+    image: postgres:17-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - ./docker/init.sql:/init.sql:ro
+    command: psql -h postgres -U kalender -d kalender -f /init.sql
+
+volumes:
+  postgres_data:

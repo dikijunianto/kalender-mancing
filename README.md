@@ -1,6 +1,6 @@
 # Fishing Calendar / Kalender Mancing
 
-A working Indonesian fishing planner for Kepulauan Seribu and Bekasi–Karawang: monthly calendar, deterministic fishing scores, independent safety checks, hourly marine visualization, tide chart, moon calculations, editorial species guides, and private fishing logs.
+A working Indonesian fishing planner for Kepulauan Seribu and Bekasi–Karawang: monthly calendar, deterministic fishing scores, independent safety checks, hourly marine visualization, tide chart, moon calculations, and editorial species guides.
 
 Repository: [dikijunianto/kalender-mancing](https://github.com/dikijunianto/kalender-mancing). The local `origin` points here. No push or deployment is performed automatically.
 
@@ -13,62 +13,62 @@ npm install
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). With no environment configuration, the app runs in clearly labeled demo mode. No account or API key is needed for public pages. Personal logs require a configured Supabase project and email authentication; there is no pretend login or browser-storage substitute.
+Open [localhost:3000](http://localhost:3000). Without environment configuration, the app uses demo data. For live forecasts and persistent cache, use Docker below. This MVP has no account or personal-log feature.
 
-Create `.env.local` from `.env.example` when connecting services. Never commit `.env.local` or service keys.
+## Docker
+
+Copy `.env.docker.example` to `.env`, choose a database password, then run:
+
+```sh
+docker compose up --build -d
+```
+
+The app runs at [localhost:3000](http://localhost:3000); PostgreSQL stays private to the Docker network. Stop it with `docker compose down`. Add `-v` only when intentionally deleting database data.
+
+This starts live Open-Meteo forecasts. PostgreSQL stores the forecast cache; refresh it on demand:
+
+```sh
+curl -X POST http://localhost:3000/api/sync -H "Authorization: Bearer $SYNC_SECRET"
+```
+
+Create `.env.local` from `.env.example` only when running outside Docker. Never commit it.
 
 ```dotenv
 DATABASE_URL=
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-DEMO_MODE=true
+DEMO_MODE=false
 OPEN_METEO_API_KEY=
 SYNC_SECRET=
 ```
 
-| Variable                        | Purpose                                                                                                                      |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                  | PostgreSQL connection for external SQL tooling; runtime uses Supabase's HTTP client, so this is not required to run the app. |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL. Required for account features.                                                                         |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public project API key; authorization is enforced by verified sessions and PostgreSQL row-level security.                    |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Server-only database sync, cache writes, and seeding. Never expose through `NEXT_PUBLIC_*`.                                  |
-| `DEMO_MODE`                     | `true` or absent: deterministic simulations. Set exactly `false` for actual provider forecasts.                              |
-| `OPEN_METEO_API_KEY`            | Optional commercial Open-Meteo key; selects customer endpoints when provided.                                                |
-| `SYNC_SECRET`                   | Secret bearer token protecting `POST /api/sync`. Disabled when absent.                                                       |
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection for persistent forecast cache. |
+| `DEMO_MODE` | `true` for simulation; `false` for live forecasts. |
+| `OPEN_METEO_API_KEY` | Optional commercial Open-Meteo key. |
+| `SYNC_SECRET` | Secret bearer token protecting `POST /api/sync`. |
 
-Public Supabase values are bundled into client code, so rebuild after changing them in production.
+## PostgreSQL cache
 
-## Supabase setup, migration, and seed
-
-1. Create a Supabase project and put its URL, public API key, and server service-role key into `.env.local`.
-2. Open the Supabase SQL editor. Run `supabase/migrations/202609080001_initial.sql` once. With a linked Supabase CLI project, `supabase db push` is an alternative. The migration creates tables, constraints, indexes, update triggers, grants, and row-level security policies.
-3. Run `npm run db:seed`. This idempotently upserts two areas, ten species, 228 area/month editorial seasonality entries, 1,440 hourly marine rows, 1,440 tide rows, and 60 area-specific moon rows covering 30 days from the current Jakarta date. All generated marine/tide rows are `DEMO`; all seasonality is `EDITORIAL`. Seeding does not overwrite the actual forecast cache.
-4. In Supabase Authentication, enable the Email provider and email signup if new users should register. Configure the Site URL and allow `http://localhost:3000/auth/callback` plus the production origin's `/auth/callback` under Redirect URLs. Keep the default email template's confirmation URL link, which uses the PKCE authorization-code flow. Configure production SMTP for dependable email delivery.
-5. Restart the app. Open `/logs`, request a sign-in email, and open the link in the same browser. The callback exchanges the code for a session; the request proxy refreshes sessions. Save a trip with the form.
-
-Authenticated log requests verify the user with Supabase Auth, ignore client-supplied user IDs, validate input with Zod, and enforce ownership again in PostgreSQL. Anonymous clients cannot read logs. Each user can access only their own rows. The service-role client is never used to serve or insert personal logs. Failed saves preserve form input.
-
-Migration tests execute real PostgreSQL using PGlite with a minimal stand-in for Supabase's `auth.users` and `auth.uid()` boundary. They verify the full seed, constraints, authenticated inserts, forbidden cross-user inserts/updates, anonymous denial, and per-user isolation. They do not substitute for verifying email delivery against your actual Supabase project.
+Docker creates `forecast_cache` automatically. `POST /api/sync` stores both areas' next seven forecast days, so normal page visits read PostgreSQL before calling Open-Meteo. Schedule it every few hours on a VPS. Keep `SYNC_SECRET` server-only.
 
 ## Architecture
 
 ```text
 src/app/                     App Router pages, metadata, errors, loading, APIs
-src/components/              Shared UI, calendar, charts, account form
+src/components/              Shared UI, calendar, charts
 src/components/ui/           shadcn-style Button and Tabs with Radix primitives
 src/components/three/        Lazy-loaded React Three Fiber components
 src/config/                  Area/species seed catalog, score/safety/quality settings
 src/providers/marine/        Provider interface, Open-Meteo and demo adapters
 src/services/                Forecast orchestration, score, safety, moon, tides, time, species
-src/lib/supabase/            Separate browser, user-session, and server admin clients
+src/lib/postgres.ts          PostgreSQL connection for forecast cache
 src/types/                   Normalized forecast and visualization models
-supabase/migrations/         PostgreSQL migration and RLS policies
-scripts/                     Repeatable seed and actual provider diagnostic
+docker/init.sql              Forecast-cache schema
+scripts/                     Provider diagnostic
 tests/                       Engine/provider/SQL and desktop/mobile browser checks
 ```
 
-Next.js 16 App Router, React 19, strict TypeScript, Tailwind CSS 4, Radix/shadcn component conventions, Lucide, Recharts, Zod, Supabase/PostgreSQL, SunCalc, Three.js, React Three Fiber, and Drei. Small code-owned area/species catalogs also power the SQL seed, keeping the public demo usable without database credentials. Editing editorial content currently requires updating that catalog and reseeding; no editorial admin interface is included.
+Next.js 16 App Router, React 19, strict TypeScript, Tailwind CSS 4, Radix/shadcn component conventions, Lucide, Recharts, Zod, PostgreSQL, SunCalc, Three.js, React Three Fiber, and Drei. Area and species catalogs live in code, so no database seed is needed for this MVP.
 
 Provider responses are normalized on the server. Services calculate business results before React and WebGL receive them. 3D never owns scores or safety. No LLM is called. No forecast uses `Math.random()`.
 
@@ -76,9 +76,9 @@ Provider responses are normalized on the server. Services calculate business res
 
 Set `DEMO_MODE=false` and restart. `OpenMeteoMarineProvider` combines [marine](https://open-meteo.com/en/docs/marine-weather-api) and [weather](https://open-meteo.com/en/docs) endpoints using each configured area's coordinates and Asia/Jakarta timezone. Wind is requested in knots; ocean current speed is converted from km/h to knots. Unknown measurements remain `null`.
 
-The app shows seven forecast days. Past dates and dates outside that horizon show unavailable states; they never silently become demo forecasts. The provider has a ten-second request timeout and no aggressive retry loop. Server caching lasts 30 minutes and concurrent cold requests share one provider operation. With the service-role key, normalized reports are also cached in PostgreSQL. On provider failure, database cache no older than six hours is explicitly labeled `CACHED`, with caution instead of a fresh-safe status. Older/missing cache yields `UNAVAILABLE`. Cache writes are best-effort for public forecast reads; failed synchronization reports an error.
+The app shows seven forecast days. Past dates and dates outside that horizon show unavailable states; they never silently become demo forecasts. The provider has a ten-second request timeout and no aggressive retry loop. Server caching lasts 30 minutes and concurrent cold requests share one provider operation. PostgreSQL persists normalized reports. On provider failure, cache no older than six hours is labeled `CACHED`, with caution instead of a fresh-safe status. Older/missing cache yields `UNAVAILABLE`.
 
-An external scheduler can call `POST /api/sync` every 30 minutes with `Authorization: Bearer <SYNC_SECRET>`. It refreshes both areas' seven-day cache, normalized marine rows, model tide rows, and astronomical moon rows. There is no automatic scheduler installed by this project. Use your hosting provider's scheduler or a trusted job runner; do not put the secret in client code or a URL.
+An external scheduler can call `POST /api/sync` every few hours with `Authorization: Bearer <SYNC_SECRET>`. It refreshes both areas' seven-day PostgreSQL cache. There is no automatic scheduler installed by this project. Use your hosting provider's scheduler or a trusted job runner; do not put the secret in client code or a URL.
 
 Use `npm run provider:check` to make a real request and report field coverage for both areas. The public Open-Meteo service is intended for non-commercial use; choose an appropriate commercial subscription/key before commercial operation. See the provider's current terms.
 
@@ -113,7 +113,7 @@ Quality limits geometry, particle counts, antialiasing, and pixel ratio. The low
 
 ## Routes and APIs
 
-Pages: `/`, `/calendar?month=YYYY-MM&area=...`, `/calendar/YYYY-MM-DD?area=...`, `/area`, `/area/[slug]`, `/ikan`, `/ikan/[slug]`, `/logs`, `/auth/callback`.
+Pages: `/`, `/calendar?month=YYYY-MM&area=...`, `/calendar/YYYY-MM-DD?area=...`, `/area`, `/area/[slug]`, `/ikan`, `/ikan/[slug]`.
 
 | Method / path                                | Result                                                                     |
 | -------------------------------------------- | -------------------------------------------------------------------------- |
@@ -123,11 +123,9 @@ Pages: `/`, `/calendar?month=YYYY-MM&area=...`, `/calendar/YYYY-MM-DD?area=...`,
 | `GET /api/species?area=...&date=YYYY-MM-DD`  | Editorial species recommendations                                          |
 | `GET /api/tides?area=...&date=YYYY-MM-DD`    | Tide/model level samples, extrema, source                                  |
 | `GET /api/moon?area=...&date=YYYY-MM-DD`     | Astronomical moon and solar times                                          |
-| `GET /api/logs`                              | Latest 100 trips belonging to the authenticated user                       |
-| `POST /api/logs`                             | Validated new trip; same-origin authenticated request                      |
 | `POST /api/sync`                             | Protected provider/database synchronization                                |
 
-Bad query/input data returns 400; missing login returns 401; invalid request origin returns 403; unavailable services return 503. Public forecast responses have a five-minute client cache. Personal responses are not publicly cached.
+Bad query/input data returns 400; invalid sync secret returns 401; unavailable services return 503. Public forecast responses have a five-minute client cache.
 
 An optional feature-detected `read_fishing_forecast` WebMCP tool exposes the same read API without saving records or changing page state. Unsupported browsers ignore it. Its native browser registry is not required to use the product and has not been verified in a native WebMCP environment.
 
@@ -140,7 +138,7 @@ npm run build
 npm start
 ```
 
-`npm run test` covers stable demo generation, score math/missing data, exact safety boundaries, hourly risks, local date and moon calculations, scene inputs, provider normalization/failure, form validation, and the real PostgreSQL migration/seed/RLS behavior. No external service credentials are needed for these checks.
+`npm run test` covers demo generation, score math/missing data, exact safety boundaries, hourly risks, local date and moon calculations, scene inputs, and provider normalization/failure. No external service credentials are needed.
 
 With the development server running:
 
@@ -148,19 +146,18 @@ With the development server running:
 npm run test:browser
 ```
 
-Browser tests use an installed Google Chrome and desktop/iPhone-sized viewports. Set `TEST_BASE_URL` to test another local server. They check public routes, area/month/date changes, species filtering, hourly controls, fallback behavior, API validation, and horizontal overflow. These tests deliberately do not send real authentication emails. Configure and manually verify the Supabase login/save flow before opening personal-log features to users.
+Browser tests use an installed Google Chrome and desktop/iPhone-sized viewports. Set `TEST_BASE_URL` to test another local server. They check public routes, area/month/date changes, species filtering, hourly controls, fallback behavior, API validation, and horizontal overflow.
 
 If a restricted build environment reports a Turbopack subprocess/port permission error, permit the build's local compiler processes. Do not disable type validation to work around it. Build and development outputs are kept separately by Next.js.
 
 ## Deployment and later GitHub push
 
-The app needs a Next.js-compatible Node hosting environment, such as Vercel or a Node server; it is not a static export. Production deployment and the GitHub push are intentionally left for later as requested.
+The app needs a Next.js-compatible Node hosting environment; it is not a static export. Docker Compose is ready for a VPS.
 
-1. Set the production environment variables and configure Supabase callback URLs/SMTP.
-2. Apply the migration, run the seed, and switch to `DEMO_MODE=false` if actual forecasts are intended. Verify `npm run provider:check` and an authenticated trip save.
-3. Run `npm ci` and `npm run build`; launch with `npm start` or the host's Next.js integration.
-4. Set up the protected forecast sync scheduler if using the database cache. Apply host-level rate limits to authentication and write endpoints appropriate to your traffic.
-5. When ready to publish the source, review the diff, commit only source/lockfile/config documentation, and push to the configured GitHub origin. Environment files, `.next`, `node_modules`, and test artifacts are ignored.
+1. Copy `.env.docker.example` to `.env`, set strong values, then run `docker compose up --build -d`.
+2. Verify `npm run provider:check` and `POST /api/sync`.
+3. Schedule the protected sync endpoint every few hours.
+4. When ready to publish source, review the diff and push. Environment files, `.next`, `node_modules`, and test artifacts are ignored.
 
 Ocean imagery attribution is recorded in `public/ASSETS.md`. Fish symbols are generic Lucide icons, not scientific species illustrations.
 

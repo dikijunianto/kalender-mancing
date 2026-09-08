@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/server";
+import { postgres } from "@/lib/postgres";
 import { areas } from "@/config/data";
 import { OpenMeteoMarineProvider } from "@/providers/marine/open-meteo";
 import { today, addDays } from "@/lib/date";
@@ -14,8 +15,8 @@ export async function POST(request: NextRequest) {
     provided = Buffer.from(request.headers.get("authorization") ?? "");
   if (expected.length !== provided.length || !timingSafeEqual(expected, provided))
     return NextResponse.json({ error: "Tidak diizinkan" }, { status: 401 });
-  const db = adminSupabase();
-  if (!db) return NextResponse.json({ error: "Database belum dikonfigurasi" }, { status: 503 });
+  const pg = postgres(), db = pg ? null : adminSupabase();
+  if (!pg && !db) return NextResponse.json({ error: "Database belum dikonfigurasi" }, { status: 503 });
   try {
     let days = 0;
     for (const area of areas) {
@@ -24,6 +25,16 @@ export async function POST(request: NextRequest) {
         today(),
         addDays(today(), 6),
       );
+      if (pg) {
+        for (const report of reports)
+          await pg.query(
+            "insert into forecast_cache (area_id, date, payload, fetched_at) values ($1, $2, $3, $4) on conflict (area_id, date) do update set payload = excluded.payload, fetched_at = excluded.fetched_at",
+            [area.id, report.date, JSON.stringify(report), report.fetchedAt],
+          );
+        days += reports.length;
+        continue;
+      }
+      if (!db) throw new Error("Database belum dikonfigurasi");
       const writes = [
         await db.from("forecast_cache").upsert(
           reports.map((r) => ({

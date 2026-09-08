@@ -10,6 +10,7 @@ import { getTides } from "./tide.service";
 import { DemoMarineProvider } from "@/providers/marine/demo";
 import { OpenMeteoMarineProvider } from "@/providers/marine/open-meteo";
 import { adminSupabase } from "@/lib/supabase/server";
+import { postgres } from "@/lib/postgres";
 import { addDays, today } from "@/lib/date";
 import { fishingConfig } from "@/config/fishing";
 import { applyForecastFreshness } from "./forecast-freshness";
@@ -44,10 +45,16 @@ export const getForecast = cache(async (slug: string, date: string): Promise<For
       "Prakiraan belum tersedia untuk tanggal ini. Periksa prakiraan maritim resmi BMKG sebelum melaut.",
   };
   if (date < today() || date > addDays(today(), fishingConfig.forecastDays - 1)) return unavailable;
-  const db = adminSupabase();
+  const pg = postgres(), db = pg ? null : adminSupabase();
   let saved: Forecast | null = null;
   try {
-    if (db) {
+    if (pg) {
+      const { rows } = await pg.query<{ payload: Forecast }>(
+        "select payload from forecast_cache where area_id = $1 and date = $2",
+        [area.id, date],
+      );
+      saved = rows[0]?.payload ?? null;
+    } else if (db) {
       const { data } = await db
         .from("forecast_cache")
         .select("payload")
@@ -63,7 +70,12 @@ export const getForecast = cache(async (slug: string, date: string): Promise<For
       return saved;
     const reports = await loadLive(slug, today(), addDays(today(), fishingConfig.forecastDays - 1));
     const report = reports.find((r) => r.date === date) ?? unavailable;
-    if (db)
+    if (pg)
+      await pg.query(
+        "insert into forecast_cache (area_id, date, payload, fetched_at) values ($1, $2, $3, $4) on conflict (area_id, date) do update set payload = excluded.payload, fetched_at = excluded.fetched_at",
+        [area.id, date, JSON.stringify(report), report.fetchedAt],
+      );
+    else if (db)
       await db.from("forecast_cache").upsert(
         reports.map((r) => ({
           area_id: area.id,
