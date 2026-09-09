@@ -1,13 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Anchor, House, CalendarDays, MapPin, Fish, BookOpen, ArrowUpRight } from "lucide-react";
+import { Anchor, House, CalendarDays, MapPin, Fish } from "lucide-react";
 const items = [
   { href: "/", label: "Beranda", icon: House },
   { href: "/calendar", label: "Kalender", icon: CalendarDays },
   { href: "/area", label: "Area", icon: MapPin },
   { href: "/ikan", label: "Ikan", icon: Fish },
-  { href: "/logs", label: "Log Mancing", icon: BookOpen },
 ];
 export function Navigation() {
   const path = usePathname(),
@@ -39,9 +38,7 @@ export function Navigation() {
               </Link>
             ))}
           </nav>
-          <Link href="/logs" className="header-cta">
-            Catat trip <ArrowUpRight size={15} />
-          </Link>
+          <span className="header-cta" aria-label="Log mancing segera hadir">Log Mancing · Segera hadir</span>
         </div>
       </header>
       <nav className="mobile-nav" aria-label="Navigasi seluler">
@@ -54,7 +51,7 @@ export function Navigation() {
             key={item.href}
           >
             <item.icon size={20} />
-            <span>{item.href === "/logs" ? "Log" : item.label}</span>
+            <span>{item.label}</span>
           </Link>
         ))}
       </nav>

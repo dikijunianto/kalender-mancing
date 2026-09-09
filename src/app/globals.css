@@ -1160,6 +1160,11 @@ option {
   border-radius: 8px;
   object-fit: cover;
 }
+.daily-recommendation { margin-bottom: 24px; }
+.daily-recommendation > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px; margin-top: 13px; }
+.daily-recommendation p { display: grid; gap: 3px; font-size: 13px; }
+.daily-recommendation strong { color: var(--accent); }
+.forecast-safety, .calendar-safety { color: #f5c67b; font-size: 10px; display: block; margin-top: 4px; }
 .species-detail-header h1 {
   margin: 7px 0;
 }
@@ -1461,6 +1466,8 @@ option {
   color: var(--accent);
   min-width: 68px;
 }
+.time-ticks { display: flex; justify-content: space-between; flex: 1 1 100%; padding: 0 4px; color: var(--muted); font-size: 10px; }
+.active-time { flex: 1 1 100%; margin: -5px 0 0; color: var(--accent); font-size: 12px; }
 .effects-toggle {
   display: flex;
   align-items: center;
@@ -2071,6 +2078,7 @@ option {
     gap: 14px;
     padding: 19px 15px;
   }
+  .daily-recommendation > div { grid-template-columns: 1fr; gap: 10px; }
   .daily-summary .score-ring-large {
     width: 105px;
     height: 105px;

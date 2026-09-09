@@ -55,7 +55,7 @@ export function MonthCalendar({
           <div className="calendar-cell calendar-empty" key={`empty-${i}`} aria-hidden="true" />
         ))}
         {reports.map((r) => {
-          const danger = r.safety.status === "NOT_RECOMMENDED";
+          const danger = r.safety.status === "NOT_RECOMMENDED", unavailable = r.forecast.source === "UNAVAILABLE";
           return (
             <Link
               className={cn("calendar-cell", r.forecast.date === today() && "calendar-today")}
@@ -74,13 +74,14 @@ export function MonthCalendar({
                 ) : null}
               </div>
               <div className={cn("calendar-cell-score", danger && "danger-text")}>
-                <strong>{r.score.total ?? "—"}</strong>
+                <strong>{unavailable ? "—" : r.score.total ?? "—"}</strong>
                 <span>/ 100</span>
               </div>
               <div className={cn("calendar-cell-label", danger && "danger-text")}>
                 <i />
-                {danger ? "Hindari melaut" : r.score.label}
+                {unavailable ? "Prakiraan belum tersedia" : danger ? "Hindari melaut" : r.score.label}
               </div>
+              {!unavailable && r.safety.status === "CAUTION" && <span className="calendar-safety">⚠ Waspada</span>}
             </Link>
           );
         })}

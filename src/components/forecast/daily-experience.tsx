@@ -4,9 +4,13 @@ import { MarineView } from "@/components/marine/marine-view";
 import { TideChart } from "@/components/marine/tide-chart";
 import { Conditions, FishingWindows, ScoreBreakdown } from "./report";
 import type { DailyReport } from "@/types/fishing";
-import { timeLabel } from "@/lib/date";
+import { timeLabel, today } from "@/lib/date";
 export function DailyExperience({ report }: { report: DailyReport }) {
-  const [hour, setHour] = useState(6);
+  const [hour, setHour] = useState(() =>
+    report.forecast.date === today()
+      ? Number(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Jakarta", hour: "2-digit", hourCycle: "h23" }).format())
+      : 6,
+  );
   return (
     <>
       <MarineView report={report} hour={hour} onHour={setHour} />

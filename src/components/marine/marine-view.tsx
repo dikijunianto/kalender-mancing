@@ -4,7 +4,7 @@ import { Component, useEffect, useMemo, useRef, useState } from "react";
 import { CloudRain, Moon, Navigation, Sun, Waves, Wind } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSceneState } from "@/services/scene-state";
-import { direction, weatherLabel } from "@/lib/date";
+import { dateLabel, direction, timeLabel, weatherLabel } from "@/lib/date";
 import type { DailyReport, MarineSceneState } from "@/types/fishing";
 import type { Quality } from "@/config/three";
 import type { WeatherMode } from "@/components/three/MarineWeatherScene";
@@ -127,11 +127,7 @@ export function MarineView({
           <Tabs value={mode} onValueChange={(v) => setMode(v as WeatherMode)}>
             <TabsList aria-label="Mode visualisasi">
               {[
-                ["overview", "Ringkasan"],
-                ["wind", "Angin"],
-                ["rain", "Hujan"],
-                ["moon", "Bulan"],
-                ["waves", "Gelombang"],
+                ["overview", "Ringkasan"], ["wind", "↗ Angin"], ["rain", "☂ Hujan"], ["moon", "☾ Bulan"], ["waves", "≈ Gelombang"],
               ].map(([value, label]) => (
                 <TabsTrigger key={value} value={value}>
                   {label}
@@ -183,7 +179,7 @@ export function MarineView({
               </span>
               <h3>
                 {mode === "moon"
-                  ? `${state.moonIllumination.toFixed(0)}% iluminasi`
+                  ? `${state.moonIllumination.toFixed(0)}% iluminasi · ${report.moon.name}`
                   : mode === "wind"
                     ? `${state.windSpeed.toFixed(1)} knot`
                     : mode === "waves"
@@ -194,8 +190,8 @@ export function MarineView({
               </h3>
               <p>
                 {mode === "moon"
-                  ? "Fase dihitung astronomis · seret untuk inspeksi"
-                  : `Angin dari ${direction(state.windDirection)} · gelombang ${state.waveHeight.toFixed(1)} m`}
+                  ? `Terbit ${timeLabel(report.moon.moonrise)} · terbenam ${timeLabel(report.moon.moonset)}`
+                  : mode === "rain" ? (state.precipitationIntensity > 0 ? "Hujan terdeteksi pada jam ini" : "Tidak ada hujan pada jam ini") : mode === "waves" ? `Periode ${state.wavePeriod.toFixed(1)} detik · mengikuti arah angin` : mode === "wind" ? `Angin dari ${direction(state.windDirection)} · partikel menunjukkan arah aliran` : `Angin ${state.windSpeed.toFixed(1)} kt · gelombang ${state.waveHeight.toFixed(1)} m`}
               </p>
             </div>
             <div className="marine-compass">
@@ -222,6 +218,8 @@ export function MarineView({
           aria-valuetext={`${String(hour).padStart(2, "0")}:00 WIB`}
         />
         <output htmlFor="marine-hour">{String(hour).padStart(2, "0")}:00 WIB</output>
+        <div className="time-ticks" aria-hidden="true">{[0,3,6,9,12,15,18,21].map((h) => <span key={h}>{String(h).padStart(2,"0")}</span>)}</div>
+        <p className="active-time">{dateLabel(report.forecast.date, { weekday: "long", day: "numeric", month: "short" })} · {String(hour).padStart(2, "0")}:00 WIB</p>
         <label className="effects-toggle">
           <input type="checkbox" checked={reduce} onChange={(e) => setReduce(e.target.checked)} />
           Kurangi efek (2D)

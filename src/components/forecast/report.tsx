@@ -212,10 +212,10 @@ export function FishCards({ report, limit = 3 }: { report: DailyReport; limit?: 
       <div className="section-title">
         <div>
           <span className="eyebrow">KENALI TARGETMU</span>
-          <h2>Target ikan hari ini</h2>
+          <h2>Rekomendasi target hari ini</h2>
         </div>
         <Link className="text-link" href={`/ikan?area=${report.forecast.area.slug}`}>
-          Semua ikan <ArrowUpRight size={16} />
+          Lihat semua ikan <ArrowUpRight size={16} />
         </Link>
       </div>
       <div className="fish-grid">
@@ -228,7 +228,7 @@ export function FishCards({ report, limit = 3 }: { report: DailyReport; limit?: 
             <div className="fish-card-top">
               <span className="species-number">0{i + 1} /</span>
               <span className="fish-potential">
-                {f.score}/100 · {f.score >= 75 ? "Potensi tinggi" : "Potensi sedang"}
+                {f.score}/100 · {f.score >= 75 ? "Kecocokan tinggi" : "Kecocokan sedang"}
                 <i />
               </span>
             </div>
@@ -242,7 +242,7 @@ export function FishCards({ report, limit = 3 }: { report: DailyReport; limit?: 
             </div>
             <div className="fish-card-footer">
               <span>
-                {f.species.min_depth}–{f.species.max_depth} m
+                Kedalaman {f.species.min_depth}–{f.species.max_depth} m
               </span>
               <span>Musim pilihan</span>
             </div>
@@ -254,7 +254,7 @@ export function FishCards({ report, limit = 3 }: { report: DailyReport; limit?: 
         ))}
       </div>
       <p className="muted small editorial-note">
-        Rekomendasi ini adalah panduan awal, bukan data keberadaan ikan secara langsung.
+        Rekomendasi berdasarkan musim, kondisi laut, dan karakter habitat. Bukan prediksi keberadaan ikan atau jaminan tangkapan.
       </p>
     </section>
   );
@@ -294,11 +294,8 @@ export function ForecastStrip({ reports }: { reports: DailyReport[] }) {
             <strong>{r.score.total ?? "—"}</strong>
             <span>/100</span>
           </div>
-          <span
-            className={r.safety.status === "NOT_RECOMMENDED" ? "danger-text" : "forecast-category"}
-          >
-            {r.safety.status === "NOT_RECOMMENDED" ? "Hindari melaut" : r.score.label}
-          </span>
+          <span className={r.safety.status === "NOT_RECOMMENDED" ? "danger-text" : "forecast-category"}>{r.score.label}</span>
+          {r.safety.status !== "SAFE" && <span className="forecast-safety">⚠ {r.safety.status === "CAUTION" ? "Waspada" : "Hindari melaut"}</span>}
           {best?.forecast.date === r.forecast.date && (
             <span className="best-label">PILIHAN TERBAIK</span>
           )}
@@ -308,13 +305,16 @@ export function ForecastStrip({ reports }: { reports: DailyReport[] }) {
   );
 }
 export function DaySummary({ report }: { report: DailyReport }) {
+  const primary = report.windows[0], alternate = report.windows[1];
   return (
+    <>
     <div className="daily-summary panel">
       <div>
-        <span className="eyebrow">SKOR MANCING</span>
+        <span className="eyebrow">POTENSI MANCING</span>
         <ScoreRing score={report.score} large />
       </div>
       <div className="daily-summary-copy">
+        <span className="eyebrow">KESELAMATAN</span>
         <SafetyBadge safety={report.safety} demo={report.forecast.source === "DEMO"} />
         <h2>
           {report.safety.status === "NOT_RECOMMENDED"
@@ -324,10 +324,18 @@ export function DaySummary({ report }: { report: DailyReport }) {
               : report.score.label}
         </h2>
         <p className="muted">{report.safety.reasons.join(" ")}</p>
-        <p className="muted small">
-          Penilaian keselamatan mencakup kondisi terburuk sepanjang hari.
-        </p>
+        <p className="muted small">Periksa kondisi aktual dan informasi resmi BMKG sebelum berangkat.</p>
       </div>
     </div>
+    <section className="panel daily-recommendation">
+      <span className="eyebrow">REKOMENDASI HARI INI</span>
+      <div>
+        <p><strong>🎣 Waktu terbaik</strong>{primary ? `${primary.start}–${primary.end} WIB` : "Belum tersedia"}</p>
+        {alternate && <p><strong>🎣 Alternatif</strong>{alternate.start}–{alternate.end} WIB</p>}
+        <p><strong>⚠ Perhatian</strong>{report.safety.reasons[0] ?? "Periksa kondisi aktual."}</p>
+        <p><strong>🐟 Target utama</strong>{report.fish.slice(0, 3).map((f) => f.species.name).join(" · ") || "Belum tersedia"}</p>
+      </div>
+    </section>
+    </>
   );
 }
