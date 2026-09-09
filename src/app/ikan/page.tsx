@@ -25,7 +25,7 @@ export default async function SpeciesPage({
         <AreaSelector value={area} />
       </div>
       <p className="data-notice">
-        Panduan dan rentang preferensi awal bersifat editorial, bukan hasil survei lokal atau
+        Panduan dan rentang preferensi awal bukan hasil survei lokal atau
         jaminan keberadaan ikan.
       </p>
       <SpeciesCatalog species={species.filter((s) => s.areas.includes(area))} area={area} />

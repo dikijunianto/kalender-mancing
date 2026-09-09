@@ -20,7 +20,7 @@ export default async function FishDetail({ params }: { params: Promise<{ slug: s
       <div className="species-detail-header">
         <img className="species-detail-image" src={s.image_url} alt={s.name} />
         <div>
-          <div className="eyebrow">PANDUAN EDITORIAL</div>
+          <div className="eyebrow">PANDUAN AWAL</div>
           <h1>{s.name}</h1>
           <i className="muted small">{s.scientific_name}</i>
           <p className="muted">{s.description}</p>
@@ -32,13 +32,13 @@ export default async function FishDetail({ params }: { params: Promise<{ slug: s
           <strong>{s.habitat}</strong>
         </div>
         <div className="panel">
-          <h3>Kedalaman editorial</h3>
+          <h3>Kedalaman panduan</h3>
           <strong>
             {s.min_depth}–{s.max_depth} meter
           </strong>
         </div>
         <div className="panel">
-          <h3>Preferensi suhu editorial</h3>
+          <h3>Rentang suhu panduan</h3>
           <strong>
             {s.preferred_temperature_min}–{s.preferred_temperature_max}°C
           </strong>
@@ -73,7 +73,7 @@ export default async function FishDetail({ params }: { params: Promise<{ slug: s
       <section className="panel">
         <div className="section-title">
           <h2>Kalender musim</h2>
-          <span className="eyebrow">SUMBER: EDITORIAL</span>
+          <span className="eyebrow">SUMBER: PANDUAN AWAL</span>
         </div>
         <p className="muted small">
           Skor kesesuaian awal per bulan. Belum divalidasi dengan data tangkapan lokal.
@@ -103,7 +103,7 @@ export default async function FishDetail({ params }: { params: Promise<{ slug: s
             ))}
         </div>
         <p className="small muted" style={{ marginTop: 17 }}>
-          Pilihan area dan musim merupakan panduan editorial. Perhatikan peraturan setempat, ukuran
+          Pilihan area dan musim merupakan panduan awal. Perhatikan peraturan setempat, ukuran
           tangkapan, dan praktik tangkap-lepas yang bertanggung jawab.
         </p>
       </section>

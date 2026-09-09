@@ -244,7 +244,7 @@ export function FishCards({ report, limit = 3 }: { report: DailyReport; limit?: 
               <span>
                 {f.species.min_depth}–{f.species.max_depth} m
               </span>
-              <span>Musim editorial</span>
+              <span>Musim pilihan</span>
             </div>
             <div className="fish-reason">
               <span>{f.species.habitat}</span>
@@ -254,7 +254,7 @@ export function FishCards({ report, limit = 3 }: { report: DailyReport; limit?: 
         ))}
       </div>
       <p className="muted small editorial-note">
-        Rekomendasi awal bersifat editorial. Bukan data keberadaan ikan secara langsung.
+        Rekomendasi ini adalah panduan awal, bukan data keberadaan ikan secara langsung.
       </p>
     </section>
   );

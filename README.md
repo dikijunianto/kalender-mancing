@@ -1,6 +1,6 @@
 # Fishing Calendar / Kalender Mancing
 
-A working Indonesian fishing planner for Kepulauan Seribu and Bekasi–Karawang: monthly calendar, deterministic fishing scores, independent safety checks, hourly marine visualization, tide chart, moon calculations, and editorial species guides.
+A working Indonesian fishing planner for Kepulauan Seribu and Bekasi–Karawang: monthly calendar, deterministic fishing scores, independent safety checks, hourly marine visualization, tide chart, moon calculations, and species guides.
 
 Repository: [dikijunianto/kalender-mancing](https://github.com/dikijunianto/kalender-mancing). The local `origin` points here. No push or deployment is performed automatically.
 
@@ -89,7 +89,7 @@ Use `npm run provider:check` to make a real request and report field coverage fo
 
 All thresholds and weights live in `src/config/fishing.ts`:
 
-- Wind 20%, waves 20%, current 20%, tide 15%, moon 10%, editorial seasonality 10%, sea temperature 5%.
+- Wind 20%, waves 20%, current 20%, tide 15%, moon 10%, seasonal fit 10%, sea temperature 5%.
 - Scores are deterministic heuristic weighted sums, **not catch probabilities** or scientifically validated predictions. The breakdown exposes each contribution. Missing factors leave the total unavailable; weights are not silently redistributed.
 - Scores: 85–100 Sangat Bagus; 70–84 Bagus; 55–69 Lumayan; 40–54 Kurang Bagus; 0–39 Buruk.
 - Safety inspects every hourly sample, including the day's worst conditions. Default caution thresholds are 12 kt wind, 1 m waves, and 5 km visibility. Default stop thresholds are 20 kt wind, 1.5 m waves, visibility below 1 km, or WMO thunderstorm codes 95/96/99. Threshold equality counts as exceeding the wind/wave boundary. These are conservative application heuristics, not an official classification or vessel-specific clearance.
@@ -97,7 +97,7 @@ All thresholds and weights live in `src/config/fishing.ts`:
 
 SunCalc calculates actual astronomical illumination, phase, sunrise/sunset, and moonrise/moonset for the Jakarta civil date even if the host runs in another timezone. Daily moon summaries use local noon. The 3D moon uses the selected hour. The moon's scene placement is schematic, not an azimuth/elevation navigation tool.
 
-Tides in actual mode use modeled sea-level height relative to mean sea level, including non-tidal components. This is **not a chart datum** and must not be used for safe-depth or coastal-navigation decisions. Extrema use hourly local maxima/minima, not minute-accurate event predictions. The chart explicitly identifies model versus demo and marks the selected hour. Shaded windows are light/weather recommendations, not proven favorable tide windows. Seasonal and species preferences are editorial starter guidance, not local catch surveys.
+Tides in actual mode use modeled sea-level height relative to mean sea level, including non-tidal components. This is **not a chart datum** and must not be used for safe-depth or coastal-navigation decisions. Extrema use hourly local maxima/minima, not minute-accurate event predictions. The chart explicitly identifies model versus demo and marks the selected hour. Shaded windows are light/weather recommendations, not proven favorable tide windows. Seasonal and species preferences are starter guidance, not local catch surveys.
 
 ## Marine visualization
 
@@ -121,7 +121,7 @@ Pages: `/`, `/calendar?month=YYYY-MM&area=...`, `/calendar/YYYY-MM-DD?area=...`,
 | `GET /api/areas`                             | Supported areas                                                            |
 | `GET /api/forecast?area=...&date=YYYY-MM-DD` | Full normalized daily report, score, safety, provenance, windows, and fish |
 | `GET /api/calendar?area=...&month=YYYY-MM`   | Daily computed scores, safety, source, and weather                         |
-| `GET /api/species?area=...&date=YYYY-MM-DD`  | Editorial species recommendations                                          |
+| `GET /api/species?area=...&date=YYYY-MM-DD`  | Starter species recommendations                                            |
 | `GET /api/tides?area=...&date=YYYY-MM-DD`    | Tide/model level samples, extrema, source                                  |
 | `GET /api/moon?area=...&date=YYYY-MM-DD`     | Astronomical moon and solar times                                          |
 | `POST /api/sync`                             | Protected provider/database synchronization                                |

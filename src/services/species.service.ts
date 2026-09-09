@@ -17,7 +17,7 @@ export function recommendSpecies(
       return {
         species: s,
         score: Math.round(season * 0.75 + (temperature === null ? 50 : suitable ? 95 : 40) * 0.25),
-        reason: `${s.months.includes(month) ? "Musim editorial cukup sesuai" : "Di luar periode unggulan editorial"}${temperature === null ? "; suhu laut belum tersedia" : suitable ? " dan suhu laut mendukung preferensi editorial" : "; suhu di luar preferensi editorial"}. Bukan jaminan tangkapan.`,
+        reason: `${s.months.includes(month) ? "Musim cukup sesuai" : "Di luar periode unggulan"}${temperature === null ? "; suhu laut belum tersedia" : suitable ? " dan suhu laut mendukung rentang ikan ini" : "; suhu di luar rentang ikan ini"}. Bukan jaminan tangkapan.`,
       };
     })
     .sort((a, b) => b.score - a.score);
