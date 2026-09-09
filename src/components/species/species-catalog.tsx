@@ -31,7 +31,7 @@ export function SpeciesCatalog({ species, area }: { species: Species[]; area: st
           >
             <div className="fish-card-top">
               <span className="species-number">{s.scientific_name}</span>
-              <span className="fish-potential">Editorial</span>
+              <span className="fish-potential">Panduan awal</span>
             </div>
             <div className="fish-art"><img src={s.image_url} alt={s.name} /></div>
             <div className="fish-info">

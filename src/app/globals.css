@@ -2000,29 +2000,19 @@ option {
     gap: 12px;
   }
   .fish-card {
-    display: grid;
-    grid-template-columns: 95px 1fr;
-    position: relative;
+    display: block;
   }
   .fish-card-top {
-    grid-column: 1/-1;
     padding-top: 12px;
   }
   .fish-art {
-    grid-row: 2;
-    height: 85px;
-    padding: 0 22px;
-  }
-  .fish-art svg {
-    width: 42px;
+    height: 140px;
+    padding: 0;
   }
   .fish-info {
-    grid-column: 2;
-    grid-row: 2;
-    padding: 12px 17px 12px 9px;
+    padding: 14px 17px 17px;
   }
   .fish-card-footer {
-    grid-column: 1/-1;
     font-size: 9px;
   }
   .fish-info .small {
