@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Fish, ArrowUpRight, Search } from "lucide-react";
+import { ArrowUpRight, Search } from "lucide-react";
 import type { Species } from "@/types/fishing";
 export function SpeciesCatalog({ species, area }: { species: Species[]; area: string }) {
   const [search, setSearch] = useState("");
@@ -33,9 +33,7 @@ export function SpeciesCatalog({ species, area }: { species: Species[]; area: st
               <span className="species-number">{s.scientific_name}</span>
               <span className="fish-potential">Editorial</span>
             </div>
-            <div className="fish-art">
-              <Fish size={76} strokeWidth={0.9} />
-            </div>
+            <div className="fish-art"><img src={s.image_url} alt={s.name} /></div>
             <div className="fish-info">
               <div>
                 <h3>{s.name}</h3>

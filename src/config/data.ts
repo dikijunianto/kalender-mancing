@@ -171,6 +171,7 @@ export const species: Species[] = fish.map((f, i) => ({
   slug: f[1],
   scientific_name: f[2],
   description: f[3],
+  image_url: `/fish/${f[1]}.jpg`,
   habitat: f[4],
   min_depth: f[5],
   max_depth: f[6],

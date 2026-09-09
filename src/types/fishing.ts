@@ -61,6 +61,7 @@ export type Species = {
   slug: string;
   scientific_name: string;
   description: string;
+  image_url: string;
   habitat: string;
   min_depth: number;
   max_depth: number;

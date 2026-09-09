@@ -785,6 +785,11 @@ option {
   background: radial-gradient(ellipse at 50% 80%, #90b6b416, transparent 60%);
   color: #b0c7c9;
 }
+.fish-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .fish-art svg {
   transform: scaleX(1.7) rotate(-8deg);
 }
@@ -1147,11 +1152,13 @@ option {
   border-radius: 12px;
   margin-bottom: 26px;
 }
-.species-detail-header > svg {
+.species-detail-image {
   color: #a7bebb;
   width: 140px;
   height: 110px;
   flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
 }
 .species-detail-header h1 {
   margin: 7px 0;

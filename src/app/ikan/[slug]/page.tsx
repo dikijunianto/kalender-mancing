@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Fish } from "lucide-react";
 import { areas, species } from "@/config/data";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -19,7 +18,7 @@ export default async function FishDetail({ params }: { params: Promise<{ slug: s
         <span>{s.name}</span>
       </div>
       <div className="species-detail-header">
-        <Fish size={120} strokeWidth={0.9} />
+        <img className="species-detail-image" src={s.image_url} alt={s.name} />
         <div>
           <div className="eyebrow">PANDUAN EDITORIAL</div>
           <h1>{s.name}</h1>

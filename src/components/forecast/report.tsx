@@ -232,9 +232,7 @@ export function FishCards({ report, limit = 3 }: { report: DailyReport; limit?: 
                 <i />
               </span>
             </div>
-            <div className="fish-art">
-              <Fish size={76} strokeWidth={0.9} />
-            </div>
+            <div className="fish-art"><img src={f.species.image_url} alt={f.species.name} /></div>
             <div className="fish-info">
               <div>
                 <h3>{f.species.name}</h3>
